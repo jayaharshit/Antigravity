@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Converter - Transform Your Documents</title>
+    <meta
+      name="description"
+      content="Convert your Office documents to PDF instantly with our beautiful, easy-to-use converter"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="background-gradient"></div>
+
+    <div class="container">
+      <header>
+        <div class="logo">
+          <svg
+            width="40"
+            height="40"
+            viewBox="0 0 40 40"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect width="40" height="40" rx="8" fill="url(#gradient1)" />
+            <path
+              d="M12 28V12H18C19.0609 12 20.0783 12.4214 20.8284 13.1716C21.5786 13.9217 22 14.9391 22 16C22 17.0609 21.5786 18.0783 20.8284 18.8284C20.0783 19.5786 19.0609 20 18 20H15M15 20V28M15 20H19C20.0609 20 21.0783 20.4214 21.8284 21.1716C22.5786 21.9217 23 22.9391 23 24C23 25.0609 22.5786 26.0783 21.8284 26.8284C21.0783 27.5786 20.0609 28 19 28H15"
+              stroke="white"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <defs>
+              <linearGradient id="gradient1" x1="0" y1="0" x2="40" y2="40">
+                <stop offset="0%" stop-color="#667eea" />
+                <stop offset="100%" stop-color="#764ba2" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <h1>PDF Converter</h1>
+        </div>
+        <p class="tagline">Transform your documents instantly</p>
+      </header>
+
+      <main>
+        <div class="upload-card">
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 64 64"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="32"
+                  fill="url(#iconGradient)"
+                  opacity="0.1"
+                />
+                <path
+                  d="M32 20V44M32 20L24 28M32 20L40 28"
+                  stroke="url(#iconGradient)"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M20 44H44"
+                  stroke="url(#iconGradient)"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                />
+                <defs>
+                  <linearGradient
+                    id="iconGradient"
+                    x1="0"
+                    y1="0"
+                    x2="64"
+                    y2="64"
+                  >
+                    <stop offset="0%" stop-color="#667eea" />
+                    <stop offset="100%" stop-color="#764ba2" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+
+            <h2>Drop your files here</h2>
+            <p class="upload-description">or click to browse (multiple files supported)</p>
+
+            <div class="supported-formats">
+              <span class="format-badge">DOCX</span>
+              <span class="format-badge">PPTX</span>
+              <span class="format-badge">DOC</span>
+              <span class="format-badge">PPT</span>
+            </div>
+
+            <input type="file" id="fileInput" accept=".docx,.pptx,.doc,.ppt" multiple hidden>
+          </div>
+
+          <div class="merge-option">
+            <label class="merge-checkbox">
+              <input type="checkbox" id="mergeCheckbox">
+              <span class="checkmark"></span>
+              <span class="label-text">Merge all files into one PDF</span>
+            </label>
+          </div>
+
+          <div
+            class="progress-container"
+            id="progressContainer"
+            style="display: none"
+          >
+            <div class="spinner"></div>
+            <p class="progress-text">Converting to PDF...</p>
+            <p class="progress-subtext">This may take a few moments</p>
+          </div>
+
+          <div
+            class="message-container"
+            id="messageContainer"
+            style="display: none"
+          >
+            <div class="message-icon" id="messageIcon"></div>
+            <h3 class="message-title" id="messageTitle"></h3>
+            <p class="message-text" id="messageText"></p>
+            <button
+              class="btn-primary"
+              id="convertAnother"
+              style="display: none"
+            >
+              Convert Another File
+            </button>
+          </div>
+        </div>
+
+        <div class="features">
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Lightning Fast</h3>
+            <p>Convert your documents in seconds with our optimized engine</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3>Secure & Private</h3>
+            <p>Files are processed locally and deleted after conversion</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">✨</div>
+            <h3>High Quality</h3>
+            <p>Preserve formatting and layout with precision</p>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        <p>Powered by LibreOffice • Made with ❤️</p>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
