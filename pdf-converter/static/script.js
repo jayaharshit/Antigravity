@@ -163,74 +163,51 @@ async function uploadFiles(files) {
     }
     
   } else {
-    // Original behavior - convert each file separately
-    let successCount = 0;
-    let failedFiles = [];
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const progressText = document.querySelector('.progress-text');
-      const progressSubtext = document.querySelector('.progress-subtext');
-
-      progressText.textContent = `Converting ${i + 1} of ${files.length}...`;
-      progressSubtext.textContent = `Processing: ${file.name}`;
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      try {
-        const response = await fetch('http://localhost:5000/upload', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Conversion failed');
-        }
-
-        // Get the PDF blob
-        const blob = await response.blob();
-
-        // Create download link with original filename
-        const originalName = file.name.substring(0, file.name.lastIndexOf('.'));
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${originalName}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-
-        successCount++;
-
-        // Small delay between downloads to avoid browser blocking
-        if (i < files.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-
-      } catch (error) {
-        console.error(`Error converting ${file.name}:`, error);
-        failedFiles.push({ name: file.name, error: error.message });
-      }
+    // Convert files individually but download as ZIP
+    const progressText = document.querySelector('.progress-text');
+    const progressSubtext = document.querySelector('.progress-subtext');
+    
+    progressText.textContent = `Converting ${files.length} file${files.length > 1 ? 's' : ''}...`;
+    progressSubtext.textContent = 'Processing your files';
+    
+    const formData = new FormData();
+    for (let file of files) {
+      formData.append('files[]', file);
     }
-
-    // Show results
-    if (failedFiles.length === 0) {
+    formData.append('merge', 'false');
+    
+    try {
+      const response = await fetch('http://localhost:5000/upload_batch', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Conversion failed');
+      }
+      
+      // Get the ZIP blob
+      const blob = await response.blob();
+      
+      // Download ZIP file
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'converted_files.zip';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
       showSuccess(
-        `${successCount} file${successCount > 1 ? 's' : ''} converted!`,
-        'All PDFs have been converted and downloaded successfully.'
+        `${files.length} file${files.length > 1 ? 's' : ''} converted successfully!`,
+        'Your PDFs have been downloaded as a ZIP file.'
       );
-    } else if (successCount > 0) {
-      const failedList = failedFiles.map(f => `• ${f.name}: ${f.error}`).join('\n');
-      showSuccess(
-        `${successCount} of ${files.length} files converted`,
-        `Some files failed:\n${failedList}`
-      );
-    } else {
-      const failedList = failedFiles.map(f => `• ${f.name}: ${f.error}`).join('\n');
-      showError(`All conversions failed:\n${failedList}`);
+      
+    } catch (error) {
+      console.error('Conversion error:', error);
+      showError(error.message || 'An error occurred during conversion. Please try again.');
     }
   }
 }

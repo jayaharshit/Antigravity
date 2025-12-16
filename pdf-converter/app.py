@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 import tempfile
 import shutil
+import zipfile
 from PyPDF2 import PdfMerger
 
 app = Flask(__name__, static_folder='static', static_url_path='')
@@ -201,15 +202,42 @@ def upload_batch():
             
             # Convert all files to PDF
             for upload_path in uploaded_paths:
-                pdf_path = convert_to_pdf(upload_path)
-                # Rename to keep original name
-                original_name = upload_path.stem + '.pdf'
-                final_pdf_path = OUTPUT_FOLDER / original_name
-                if pdf_path != final_pdf_path:
-                    pdf_path.rename(final_pdf_path)
-                pdf_paths.append(final_pdf_path)
-                # Clean up uploaded file
-                upload_path.unlink()
+                # Use LibreOffice directly for batch conversion
+                soffice_path = find_libreoffice()
+                
+                if not soffice_path:
+                    raise Exception("LibreOffice not found. Please install LibreOffice to use this conversion tool.")
+                
+                try:
+                    cmd = [
+                        soffice_path,
+                        '--headless',
+                        '--convert-to', 'pdf',
+                        '--outdir', str(OUTPUT_FOLDER.absolute()),
+                        str(upload_path.absolute())
+                    ]
+                    
+                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+                    
+                    if result.returncode != 0:
+                        raise Exception(f"Conversion failed: {result.stderr}")
+                    
+                    # LibreOffice creates PDF with original filename
+                    pdf_path = OUTPUT_FOLDER / (upload_path.stem + '.pdf')
+                    
+                    if not pdf_path.exists():
+                        raise Exception("PDF was not generated successfully")
+                    
+                    pdf_paths.append(pdf_path)
+                    
+                except subprocess.TimeoutExpired:
+                    raise Exception("Conversion timed out. The file might be too large or complex.")
+                except Exception as e:
+                    raise Exception(f"Conversion error: {str(e)}")
+                finally:
+                    # Clean up uploaded file
+                    if upload_path.exists():
+                        upload_path.unlink()
             
             # Merge or return individual PDFs
             if merge and len(pdf_paths) > 1:
@@ -221,9 +249,26 @@ def upload_batch():
                     mimetype='application/pdf'
                 )
             else:
-                # For non-merge, just return success
-                # Frontend will handle individual downloads
-                return jsonify({'success': True, 'count': len(pdf_paths)}), 200
+                # Create a ZIP file with all individual PDFs
+                zip_path = OUTPUT_FOLDER / 'converted_files.zip'
+                
+                with zipfile.ZipFile(str(zip_path), 'w') as zipf:
+                    for pdf_path in pdf_paths:
+                        # Add each PDF to ZIP with its original name
+                        zipf.write(str(pdf_path), pdf_path.name)
+                
+                # Clean up individual PDFs
+                for pdf_path in pdf_paths:
+                    if pdf_path.exists():
+                        pdf_path.unlink()
+                
+                # Send ZIP file
+                return send_file(
+                    str(zip_path),
+                    as_attachment=True,
+                    download_name='converted_files.zip',
+                    mimetype='application/zip'
+                )
                 
         except Exception as e:
             # Clean up on error
@@ -257,4 +302,5 @@ if __name__ == '__main__':
     print("=" * 60)
     print()
     
-    app.run(debug=True, port=5000)
+    # Disable auto-reloader to prevent server restarts during file operations
+    app.run(debug=True, port=5000, use_reloader=False)
